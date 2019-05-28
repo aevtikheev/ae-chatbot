@@ -1,18 +1,29 @@
-import requests
 import time
-import telegram
+import logging
 import os
-from requests.exceptions import ReadTimeout, ConnectionError, HTTPError
 
+import requests
+from requests.exceptions import ReadTimeout, ConnectionError, HTTPError
+import telegram
+
+
+BOT_RERUN_TIMEOUT = 60*10
 
 DVMN_API_URL = "https://dvmn.org/api/long_polling/"
 
 
-def main():
-    dvmn_token = os.environ["DVMN_TOKEN"]
-    bot_token = os.environ["BOT_TOKEN"]
-    chat_id = int(os.environ["CHAT_ID"])
+class TelegramLogsHandler(logging.Handler):
+    def __init__(self, bot_token, chat_id):
+        self._bot = telegram.Bot(token=bot_token)
+        self._chat_id = chat_id
+        super().__init__()
 
+    def emit(self, record):
+        log_entry = self.format(record)
+        self._bot.send_message(chat_id=self._chat_id, text=log_entry)
+
+
+def run_dvmn_bot(bot_token, chat_id, dvmn_token):
     timestamp = time.time()
 
     bot = telegram.Bot(token=bot_token)
@@ -45,6 +56,23 @@ def main():
                                  text="Ссылка на урок: https://dvmn.org{}".format(attempt["lesson_url"]))
         elif response_json["status"] == "timeout":
             timestamp = response_json["timestamp_to_request"]
+
+
+def main():
+    dvmn_token = os.environ["DVMN_TOKEN"]
+    bot_token = os.environ["BOT_TOKEN"]
+    chat_id = int(os.environ["CHAT_ID"])
+
+    logger = logging.getLogger("TelegramLogger")
+    logger.setLevel(logging.INFO)
+    logger.addHandler(TelegramLogsHandler(bot_token, chat_id))
+
+    while True:
+        try:
+            run_dvmn_bot(bot_token, chat_id, dvmn_token)
+        except Exception as exc:
+            logger.exception("Бот умер с ошибкой {}".format(exc))
+            time.sleep(BOT_RERUN_TIMEOUT)
 
 
 if __name__ == '__main__':
