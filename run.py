@@ -9,9 +9,9 @@ DVMN_API_URL = "https://dvmn.org/api/long_polling/"
 
 
 def main():
-    dvmn_token = os.getenv("DVMN_TOKEN")
-    bot_token = os.getenv("BOT_TOKEN")
-    chat_id = int(os.getenv("CHAT_ID"))
+    dvmn_token = os.environ("DVMN_TOKEN")
+    bot_token = os.environ("BOT_TOKEN")
+    chat_id = int(os.environ("CHAT_ID"))
 
     timestamp = time.time()
 
@@ -27,7 +27,7 @@ def main():
             response_json = r.json()
             if 'error' in response_json:
                 raise HTTPError(response_json['error'])
-        except (ReadTimeout, ConnectionError, HTTPError):
+        except (ReadTimeout, ConnectionError):
             continue
 
         if response_json["status"] == "found":
