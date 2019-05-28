@@ -67,6 +67,8 @@ def main():
     logger.setLevel(logging.INFO)
     logger.addHandler(TelegramLogsHandler(bot_token, chat_id))
 
+    logger.info("Бот запущен.")
+
     while True:
         try:
             run_dvmn_bot(bot_token, chat_id, dvmn_token)
