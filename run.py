@@ -45,15 +45,15 @@ def run_dvmn_bot(bot_token, chat_id, dvmn_token):
             timestamp = response_json["last_attempt_timestamp"]
             for attempt in response_json["new_attempts"]:
                 bot.send_message(chat_id=chat_id,
-                                 text="У вас проверили работу '{}'".format(attempt["lesson_title"]))
+                                 text="У вас проверили работу '{}'"
+                                 .format(attempt["lesson_title"]))
                 if attempt["is_negative"]:
                     bot.send_message(chat_id=chat_id,
                                      text="К сожалению, в работе нашлись ошибки.")
                 else:
                     bot.send_message(chat_id=chat_id,
-                                     text="Преподавателю всё понравилось, можно приступать к следующему уроку!")
-                bot.send_message(chat_id=chat_id,
-                                 text="Ссылка на урок: https://dvmn.org{}".format(attempt["lesson_url"]))
+                                     text="Преподавателю всё понравилось,"
+                                          " можно приступать к следующему уроку!")
         elif response_json["status"] == "timeout":
             timestamp = response_json["timestamp_to_request"]
 
